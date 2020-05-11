@@ -1,5 +1,8 @@
-import 'package:chat_app/widgets/auth/auth_form.dart';
 import 'package:flutter/material.dart';
+import 'package:chat_app/widgets/auth/auth_form.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -7,6 +10,62 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  bool _isLoading = false;
+  final _auth = FirebaseAuth.instance;
+  void _submitForm(
+    String email,
+    String username,
+    String password,
+    bool isLogin,
+    BuildContext ctx,
+  ) async {
+    AuthResult _authResult;
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      if (isLogin) {
+        _authResult = await _auth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      } else {
+        _authResult = await _auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+        await Firestore.instance
+            .collection('users')
+            .document(_authResult.user.uid)
+            .setData(
+          {
+            'username': username,
+            'email': email,
+          },
+        );
+      }
+    } on PlatformException catch (err) {
+      var message = 'Add correct credentials';
+      if (err.message != null) {
+        message = err.message;
+      }
+      Scaffold.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Theme.of(ctx).errorColor,
+        ),
+      );
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (err) {
+      print(err);
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,7 +81,10 @@ class _AuthScreenState extends State<AuthScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: AuthForm(),
+        child: AuthForm(
+          _submitForm,
+          _isLoading,
+        ),
       ),
     );
   }
