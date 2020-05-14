@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:chat_app/widgets/pickers/user_image.dart';
 import 'package:flutter/material.dart';
 
 class AuthForm extends StatefulWidget {
@@ -5,6 +8,7 @@ class AuthForm extends StatefulWidget {
     String email,
     String username,
     String password,
+    File image,
     bool isLogin,
     BuildContext context,
   ) _submitData;
@@ -19,17 +23,34 @@ class _AuthFormState extends State<AuthForm> {
   String _userMail = '';
   String _userName = '';
   String _userPassword = '';
+  File _userImage;
   bool isLogin = true;
+
+  void _pickedImage(File image) {
+    _userImage = image;
+  }
 
   void _trySubmit() {
     final isValid = _formKey.currentState.validate();
     FocusScope.of(context).unfocus();
+
+    if (_userImage == null && !isLogin) {
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please pick an image'),
+          backgroundColor: Theme.of(context).errorColor,
+        ),
+      );
+        return;
+    }
+
     if (isValid) {
       _formKey.currentState.save();
       widget._submitData(
         _userMail.trim(),
         _userName.trim(),
         _userPassword.trim(),
+        _userImage,
         isLogin,
         context,
       );
@@ -51,6 +72,7 @@ class _AuthFormState extends State<AuthForm> {
               key: _formKey,
               child: Column(
                 children: <Widget>[
+                  if (!isLogin) UserImagePicker(_pickedImage),
                   TextFormField(
                     key: ValueKey('email'),
                     keyboardType: TextInputType.emailAddress,
@@ -99,11 +121,17 @@ class _AuthFormState extends State<AuthForm> {
                       _userPassword = value;
                     },
                   ),
-                  SizedBox(height: 20,),
+                  SizedBox(
+                    height: 20,
+                  ),
                   if (widget.isLoading)
-                   CircularProgressIndicator(backgroundColor: Theme.of(context).primaryColor,),
+                    CircularProgressIndicator(
+                      backgroundColor: Theme.of(context).primaryColor,
+                    ),
                   if (!widget.isLoading)
                     RaisedButton(
+                      splashColor: Theme.of(context).accentColor,
+                      elevation: 5,
                       child: Text(
                         isLogin ? 'Login' : 'Signup',
                       ),
