@@ -97,28 +97,24 @@ class _MessageBubbleState extends State<MessageBubble> {
             ),
           ],
         ),
-        if(!widget.isMe)
-        Positioned(
-          left:
-              !widget.isMe ? positionRed == null ? 0 : (sizeRed.width - 25) : 0,
-          bottom:
-              !widget.isMe ? sizeRed == null ? 0 : (sizeRed.height - 40) : 0,
-          child: CircleAvatar(
-            backgroundImage: NetworkImage(widget.userImage),
-            radius: 20,
+        if (!widget.isMe)
+          Positioned(
+            left: positionRed == null ? 0 : (sizeRed.width - 25),
+            bottom: sizeRed == null ? 0 : (sizeRed.height - 40),
+            child: CircleAvatar(
+              backgroundImage: NetworkImage(widget.userImage),
+              radius: 20,
+            ),
           ),
-        ),
-        if(widget.isMe)
-        Positioned(
-          right:
-              widget.isMe ? positionRed == null ? 0 : (sizeRed.width - 25) : 0,
-          bottom: widget.isMe ? sizeRed == null ? 0 : (sizeRed.height - 40) : 0,
-          child: CircleAvatar(
-            backgroundImage: NetworkImage(widget.userImage),
-            radius: 20,
+        if (widget.isMe)
+          Positioned(
+            right: positionRed == null ? 0 : (sizeRed.width - 25),
+            bottom: sizeRed == null ? 0 : (sizeRed.height - 40),
+            child: CircleAvatar(
+              backgroundImage: NetworkImage(widget.userImage),
+              radius: 20,
+            ),
           ),
-        ),
-        
       ],
       overflow: Overflow.visible,
     );
