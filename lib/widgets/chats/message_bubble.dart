@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class MessageBubble extends StatelessWidget {
+class MessageBubble extends StatefulWidget {
   final String message;
   final bool isMe;
   final String username;
@@ -9,27 +9,62 @@ class MessageBubble extends StatelessWidget {
 
   MessageBubble(this.message, this.isMe, this.username, this.userImage,
       {this.key});
+
+  @override
+  _MessageBubbleState createState() => _MessageBubbleState();
+}
+
+class _MessageBubbleState extends State<MessageBubble> {
+  final GlobalKey _keyRed = GlobalKey();
+  Offset positionRed;
+  Size sizeRed;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getSizes();
+      print(sizeRed);
+      print(positionRed);
+    });
+  }
+
+  getSizes() {
+    RenderBox renderBoxRed = _keyRed.currentContext.findRenderObject();
+    if (_keyRed.currentContext == null) print("no");
+    setState(() {
+      sizeRed = renderBoxRed.size;
+      positionRed = renderBoxRed.localToGlobal(Offset.zero);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
         Row(
+          key: widget.key,
           mainAxisAlignment:
-              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              widget.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: <Widget>[
             Container(
+              key: _keyRed,
               decoration: BoxDecoration(
-                color: isMe
+                color: widget.isMe
                     ? Theme.of(context).primaryColor.withOpacity(0.7)
                     : Theme.of(context).accentColor.withOpacity(0.9),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(12),
                   topRight: Radius.circular(12),
-                  bottomLeft: !isMe ? Radius.circular(0) : Radius.circular(12),
-                  bottomRight: isMe ? Radius.circular(0) : Radius.circular(12),
+                  bottomLeft:
+                      !widget.isMe ? Radius.circular(0) : Radius.circular(12),
+                  bottomRight:
+                      widget.isMe ? Radius.circular(0) : Radius.circular(12),
                 ),
               ),
-              width: 200,
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.6,
+              ),
               padding: EdgeInsets.symmetric(
                 vertical: 10,
                 horizontal: 16,
@@ -39,33 +74,51 @@ class MessageBubble extends StatelessWidget {
                 horizontal: 8,
               ),
               child: Column(
-                crossAxisAlignment:
-                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment: widget.isMe
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    username,
+                    widget.username,
                     style: TextStyle(
-                      color: isMe ? Colors.black : Colors.white,
+                      color: widget.isMe ? Colors.black : Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    message,
+                    widget.message,
                     style: TextStyle(
-                      color: isMe ? Colors.black : Colors.white,
+                      color: widget.isMe ? Colors.black : Colors.white,
                     ),
-                    textAlign: isMe ? TextAlign.end : TextAlign.start,
+                    textAlign: widget.isMe ? TextAlign.end : TextAlign.start,
                   ),
                 ],
               ),
             ),
           ],
         ),
+        if(!widget.isMe)
         Positioned(
-          left:isMe? null :180,
-          right: isMe? 180:null,
-          child: CircleAvatar(backgroundImage: NetworkImage(userImage),),
+          left:
+              !widget.isMe ? positionRed == null ? 0 : (sizeRed.width - 25) : 0,
+          bottom:
+              !widget.isMe ? sizeRed == null ? 0 : (sizeRed.height - 40) : 0,
+          child: CircleAvatar(
+            backgroundImage: NetworkImage(widget.userImage),
+            radius: 20,
+          ),
         ),
+        if(widget.isMe)
+        Positioned(
+          right:
+              widget.isMe ? positionRed == null ? 0 : (sizeRed.width - 25) : 0,
+          bottom: widget.isMe ? sizeRed == null ? 0 : (sizeRed.height - 40) : 0,
+          child: CircleAvatar(
+            backgroundImage: NetworkImage(widget.userImage),
+            radius: 20,
+          ),
+        ),
+        
       ],
       overflow: Overflow.visible,
     );

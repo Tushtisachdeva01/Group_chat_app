@@ -9,7 +9,7 @@ exports.myFunction = functions.firestore
         console.log(snapshot.data());
         admin.messaging().sendToTopic('chat', {
             notification: {
-                title: snapshot.data.usernsme,
+                title: snapshot.data.username,
                 body: snapshot.data.text,
                 clickAction: 'FLUTTER_NOTIFICATION_CLICK',
             },
